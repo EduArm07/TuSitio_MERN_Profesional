@@ -1,62 +1,43 @@
 import express from "express";
 import dotenv from "dotenv";
-import Usuario from "./models/Usuario.js";
+import cors from "cors";
 import conectarDB from "./config/db.js";
-import usuarioRoutes from "./routes/usuarioRoutes.js";
-import hotelRoutes from "./routes/hotelRoutes.js";
-import habitacionRoutes from "./routes/habitacionRoutes.js";
-import reservaRoutes from "./routes/reservaRoutes.js";
-import resenaRoutes from "./routes/resenaRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import usuarioRoutes from "./routes/usuarioRoutes.js";
+import empleadoRoutes from "./routes/empleadoRoutes.js";
+import asistenciaRoutes from "./routes/asistenciaRoutes.js";
+import vacacionesRoutes from "./routes/vacacionesRoutes.js";
+import evaluacionRoutes from "./routes/evaluacionRoutes.js";
+import menuRoutes from "./routes/menuRoutes.js";
 
 dotenv.config();
-
 conectarDB();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use("/api/usuarios", usuarioRoutes);
-
-app.use("/api/hoteles", hotelRoutes);
-
-app.use("/api/habitaciones", habitacionRoutes);
-
-app.use("/api/reservas", reservaRoutes);
-
-app.use("/api/resenas", resenaRoutes);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("uploads"));
 
 app.use("/api/auth", authRoutes);
-
-const PORT = process.env.PORT || 5000;
-
-
-app.listen(PORT, () => {
-  console.log(
-    `Servidor ejecutándose en puerto ${PORT}`
-  );
-});
+app.use("/api/usuarios", usuarioRoutes);
+app.use("/api/empleados", empleadoRoutes);
+app.use("/api/asistencias", asistenciaRoutes);
+app.use("/api/vacaciones", vacacionesRoutes);
+app.use("/api/evaluaciones", evaluacionRoutes);
+app.use("/api/menu", menuRoutes);
 
 app.get("/test", (req, res) => {
-  res.json({
-    mensaje: "API funcionando correctamente"
-  });
+  res.json({ mensaje: "API Workday funcionando correctamente" });
 });
 
-app.post("/usuarios", async (req, res) => {
-
-  try {
-
-    const usuario = await Usuario.create(req.body);
-
-    res.status(201).json(usuario);
-
-  } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
-  }
-
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Servidor Workday ejecutándose en puerto ${PORT}`);
 });

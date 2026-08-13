@@ -1,35 +1,31 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "../context/AuthProvider";
+import { WebRouter } from "./WebRouter";
+import { AdminRouter } from "./AdminRouter";
+import { useAuth } from "../hooks/useAuth";
+import "../scss/index.scss";
 
-import Home from "../../../frontend/src/pages/Home";
-import Login from "../../../frontend/src/pages/Login";
-import Registro from "../../../frontend/src/pages/Registro";
-import Hoteles from "../../../frontend/src/pages/Hoteles";
-import DetalleHotel from "../../../frontend/src/pages/DetalleHotel";
-import Reserva from "../../../frontend/src/pages/Reserva";
-import Dashboard from "../../../frontend/src/pages/Dashboard";
+function AppContent() {
+  const { checkingSession } = useAuth();
 
-function AppRoutes() {
+  if (checkingSession) {
+    return <div style={{ padding: 40, textAlign: "center" }}>Cargando sesión...</div>;
+  }
+
   return (
-    <BrowserRouter>
-      <Routes>
-
-        <Route path="/" element={<Home />} />
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/registro" element={<Registro />} />
-
-        <Route path="/hoteles" element={<Hoteles />} />
-
-        <Route path="/detalle-hotel" element={<DetalleHotel />} />
-
-        <Route path="/reserva" element={<Reserva />} />
-
-        <Route path="/dashboard" element={<Dashboard />} />
-
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/*" element={<WebRouter />} />
+      <Route path="/admin/*" element={<AdminRouter />} />
+    </Routes>
   );
 }
 
-export default AppRoutes;
+export default function AppRoutes() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

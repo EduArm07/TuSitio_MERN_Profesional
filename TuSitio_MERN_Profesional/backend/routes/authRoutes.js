@@ -1,23 +1,17 @@
 import express from "express";
-
 import {
-
   registrarUsuario,
-
-  loginUsuario
-
+  loginUsuario,
+  refreshAccessToken,
+  getPerfil,
 } from "../controllers/authController.js";
+import { verificarToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post(
-  "/registro",
-  registrarUsuario
-);
+router.post("/registro", registrarUsuario);
+router.post("/login", loginUsuario);
+router.post("/refresh", refreshAccessToken);
+router.get("/perfil", verificarToken, getPerfil);
 
-router.post(
-  "/login",
-  loginUsuario
-);
-
-export default router;// Auth Routes
+export default router;

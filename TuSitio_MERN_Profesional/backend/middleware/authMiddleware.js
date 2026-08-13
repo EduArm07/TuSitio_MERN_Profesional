@@ -1,46 +1,31 @@
-import jwt from "jsonwebtoken";
-import Usuario from "../models/Usuario.js";
+import { verifyToken } from "../utils/jwt.js";
 
-const authMiddleware = async (req, res, next) => {
+export const verificarToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
 
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-
-    try {
-
-      token = req.headers.authorization.split(" ")[1];
-
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
-
-      req.usuario = await Usuario.findById(
-        decoded.id
-      ).select("-password");
-
-      next();
-
-    } catch (error) {
-
-      return res.status(401).json({
-        mensaje: "Token no válido"
-      });
-
-    }
-
-  } else {
-
-    return res.status(401).json({
-      mensaje: "No autorizado"
-    });
-
+  if (!token) {
+    return res.status(401).json({ msg: "No hay token, autorización denegada" });
   }
 
+  const decoded = verifyToken(token);
+
+  if (!decoded || decoded.token_type !== "access") {
+    return res.status(401).json({ msg: "Token inválido o expirado" });
+  }
+
+  req.usuario_id = decoded.user_id;
+  req.usuario_rol = decoded.rol;
+  next();
 };
 
-export default authMiddleware;
+export const verificarRol = (...roles) => {
+  return (req, res, next) => {
+    if (!req.usuario_rol) {
+      return res.status(401).json({ msg: "No autorizado" });
+    }
+    if (!roles.includes(req.usuario_rol)) {
+      return res.status(403).json({ msg: "No tienes permisos para realizar esta acción" });
+    }
+    next();
+  };
+};
